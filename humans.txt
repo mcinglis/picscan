@@ -3,11 +3,8 @@
 
 # TEAM
 
-    <name> -- <role> -- <twitter>
-
-# THANKS
-
-    <name>
+    Krystyna Genser -- developer
+    Malcolm Inglis -- developer
 
 # TECHNOLOGY COLOPHON
 
