@@ -3,10 +3,6 @@
 
 # TEAM
 
-    Krystyna Genser -- developer
-    Malcolm Inglis -- developer
+    Krystyna Genser -- developer -- dkgenser @ GitHub
+    Malcolm Inglis -- developer -- zenmunki @ GitHub
 
-# TECHNOLOGY COLOPHON
-
-    HTML5, CSS3
-    jQuery, Modernizr, Fabric
