@@ -89,12 +89,13 @@ $(function() {
     },
 
     getCursorPoints: function() {
-      var os = 5;
+      var osx = this.canvas.width / 4;
+	  var osy = this.canvas.height / 4;
       return {
-        tl: { x: os, y: os },
-        tr: { x: this.canvas.width - os, y: os },
-        bl: { x: os, y: this.canvas.height - os },
-        br: { x: this.canvas.width - os, y: this.canvas.height - os },
+        tl: { x: osx, y: osy },
+        tr: { x: this.canvas.width - osx, y: osy },
+        bl: { x: osx, y: this.canvas.height - osy },
+        br: { x: this.canvas.width - osx, y: this.canvas.height - osy },
       };
     },
 
