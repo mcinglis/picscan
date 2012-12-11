@@ -13,11 +13,6 @@
         <link rel="author" href="humans.txt">
 
         <link rel="stylesheet" href="css/bootstrap-2.2.1.min.css">
-        <style>
-            body {
-                padding-top: 20px;
-            }
-        </style>
         <link rel="stylesheet" href="css/bootstrap-responsive-2.2.1.min.css">
         <link rel="stylesheet" href="css/main.css">
 
@@ -29,39 +24,59 @@
         <![endif]-->
 
         <div class="container">
-          <header>
+          <!-- Application header -->
+          <div class="page-header">
+
+            <div id="navigation"></div>
             <h1>PicScan</h1>
-          </header>
-          <div id="container">Loading...</div>
+          </div>
+
+          <!-- Dynamic content -->
+          <div id="dynamic">
+            Loading...
+          </div>
         </div>
 
-        <script id="file-template" type="text/template">
-          <h2>Choose a picture</h2>
-          <ul class="pager">
-            <li class="previous">
-              <a href="#">&larr; Previous</a>
-            </li>
-            <li class="next">
-              <a href="#overview">Newer &rarr;</a>
-            </li>
-          </ul>
-          <select>
-            <option>A4</option>
-            <option>8.5x11</option>
-          </select>
-          <input type="file" />
+        <script id="navigation-template" type="text/template">
+          <div class="navigation btn-group">
+            <% if (previous) { %>
+              <a href="#<%= previous %>" id="nav-previous" class="btn btn-inverse">
+                <i class="icon-white icon-backward"></i>
+              </a>
+            <% } %>
+
+            <a href="#<%= next %>" id="nav-next" class="btn btn-inverse">
+              Next <i class="icon-white icon-forward"></i>
+            </a>
+          </div>
+        </script>
+
+        <script id="start-template" type="text/template">
+          <div class="centered">
+            <h4>Choose a photo of a document to begin.</h4>
+
+            <form class="photo-form form-horizontal">
+              <div class="control-group">
+                <label class="control-label" for="photo">Photo</label>
+                <div class="controls">
+                  <input type="file" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label" for="size">Page size</label>
+                <div class="controls">
+                  <select id="size">
+                    <option>A4 (8.27" &times; 11.69")</option>
+                    <option>US letter (8.5" &times; 11")</option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
         </script>
 
         <script id="overview-template" type="text/template">
           <h2>Adjust the rectification dimensions</h2>
-          <ul class="pager">
-            <li class="previous">
-              <a href="#">&larr; Previous</a>
-            </li>
-            <li class="next">
-              <a href="#">Newer &rarr;</a>
-            </li>
-          </ul>
           <canvas id="overview"></canvas>
         </script>
 
