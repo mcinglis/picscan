@@ -42,32 +42,36 @@
             <% if (previous) { %>
               <a href="#<%= previous %>" id="nav-previous" class="btn btn-inverse">
                 <i class="icon-white icon-backward"></i>
+                Previous
               </a>
             <% } %>
 
-            <a href="#<%= next %>" id="nav-next" class="btn btn-inverse">
-              Next <i class="icon-white icon-forward"></i>
-            </a>
+            <% if (next) { %>
+              <a href="#<%= next %>" id="nav-next" class="btn btn-inverse">
+                Next
+                <i class="icon-white icon-forward"></i>
+              </a>
+            <% } %>
           </div>
         </script>
 
         <script id="start-template" type="text/template">
           <div class="centered">
-            <h4>Choose a photo of a document to begin.</h4>
+            <p class="lead">Choose a photo of a document to begin.</p>
 
             <form class="photo-form form-horizontal">
               <div class="control-group">
                 <label class="control-label" for="photo">Photo</label>
                 <div class="controls">
-                  <input type="file" />
+                  <input type="file" id="photo" />
                 </div>
               </div>
               <div class="control-group">
                 <label class="control-label" for="size">Page size</label>
                 <div class="controls">
                   <select id="size">
-                    <option>A4 (8.27" &times; 11.69")</option>
-                    <option>US letter (8.5" &times; 11")</option>
+                    <option value="0.77273">US letter (8.5" &times; 11")</option>
+                    <option value="0.70744">A4 (8.27" &times; 11.69")</option>
                   </select>
                 </div>
               </div>
@@ -76,8 +80,12 @@
         </script>
 
         <script id="overview-template" type="text/template">
-          <h2>Adjust the rectification dimensions</h2>
+          <p class="lead">Adjust the rectification dimensions.</p>
           <canvas id="overview"></canvas>
+        </script>
+
+        <script id="corners-template" type="text/template">
+          <p class="lead">Drag to adjust corners.</p>
         </script>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
@@ -90,6 +98,7 @@
         <script src="js/vendor/fabric-0.9.15.min.js"></script>
         <script src="js/vendor/sylvester-20121210.min.js"></script>
 
+        <script src="js/navigation.js"></script>
         <script src="js/main.js"></script>
 
         <script>

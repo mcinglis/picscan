@@ -1,65 +1,39 @@
+
+if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+  alert('The file APIs are not supported by your browser.');
+}
+
 $(function() {
 
   function template(identifier) {
     return _.template($(identifier).html());
   }
 
-  var Navigation = Backbone.Model.extend({
-    defaults: function() {
-      return {
-        previous: false,
-        current: 'start',
-        next: 'overview'
-      };
+  var configuration = {
+    set: function(key, value) {
+      this[key] = value;
+      console.log('configuration.' + key + ' = ' + value);
     },
+  };
 
-    cycle: function(newNext) {
-      this.set({
-        previous: this.get('current'),
-        current: this.get('next'),
-        next: newNext,
-      });
-    }
-  });
-
-  var NavigationView = Backbone.View.extend({
-    el: '#navigation',
-    template: template('#navigation-template'),
-
-    events: {
-      'click #nav-next': 'nextScreen',
-      'click #nav-previous': 'previousScreen'
-    },
-
-    initialize: function() {
-      this.model.bind('change', this.render, this);
-    },
-
-    render: function() {
-      this.$el.html(this.template(this.model.toJSON()));
-      return this;
-    },
-
-    setNextScreen: function(screen) {
-      this.model.cycle(screen);
-    },
-
-    nextScreen: function() {
-
-    },
-
-    previousScreen: function() {},
-  });
-
-  var ScreenView = Backbone.View.extend({
-    el: '#dynamic',
-  });
+  var ScreenView = Backbone.View.extend({ el: '#dynamic', });
 
   var StartView = ScreenView.extend({
     template: template('#start-template'),
+
     render: function() {
       this.$el.html(this.template());
+      this.saveSize();
       return this;
+    },
+
+    events: {
+      'change #size': 'saveSize',
+    },
+      
+    saveSize: function() {
+        var value = parseFloat($('#size :selected').attr('value'));
+        configuration.set('sizeRatio', value);
     },
   });
 
@@ -67,39 +41,40 @@ $(function() {
     template: template('#overview-template'),
     render: function() {
       this.$el.html(this.template());
+      this.canvas = new fabric.StaticCanvas('overview');
       return this;
     }
   });
 
+  var CornersView = ScreenView.extend({
+    template: template('#corners-template'),
+    render: function() {
+      this.$el.html(this.template());
+      return this;
+    },
+  });
+
   var Router = Backbone.Router.extend({
     views: {
-      navigation: new NavigationView({ model: new Navigation() }),
-      start: new StartView(),
-      overview: new OverviewView()
+      start: StartView,
+      overview: OverviewView,
+      corners: CornersView,
     },
 
     initialize: function(options) {
-      this.views.navigation.render();
+      (new psnav.NavigationView({ model: options.navigation })).render();
+      this.route(/^(.*)$/, 'view', this.renderView);
     },
 
-    routes: {
-      '': 'start',
-      'start': 'start',
-      'overview': 'overview'
+    renderView: function(name) {
+      viewClass = name === '' ? StartView : this.views[name];
+      return (new viewClass()).render();
     },
-
-    start: function() {
-      return this.views.start.render();
-    },
-
-    overview: function() {
-      this.views.navigation.setNextScreen('blerh');
-      return this.views.overview.render();
-    }
   });
 
-  router = new Router();
-  router.on('all', function(name) { console.log(name); });
-
+  var navigation = new psnav.Navigation({
+    screens: ['start', 'overview', 'corners']
+  });
+  router = new Router({ navigation: navigation });
   Backbone.history.start();
 });
