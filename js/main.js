@@ -160,6 +160,14 @@ $(function() {
 	},
   });
 
+  var CornersView = ScreenView.extend({
+    template: template('#corners-template'),
+    render: function() {
+      this.$el.html(this.template());
+      return this;
+    }
+  });
+
   var RectifyView = ScreenView.extend({
     template: template('#rectify-template'),
     render: function() {
@@ -229,6 +237,7 @@ $(function() {
     views: {
       start: new StartView(),
       overview: new OverviewView(),
+      corners: new CornersView(),
       rectify: new RectifyView(),
     },
 
@@ -244,7 +253,7 @@ $(function() {
   });
 
   var navigation = new psnav.Navigation({
-    screens: ['start', 'overview', 'rectify']
+    screens: ['start', 'overview', 'corners', 'rectify']
   });
   router = new Router({ navigation: navigation });
   Backbone.history.start();

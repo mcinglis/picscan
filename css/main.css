@@ -6,6 +6,11 @@ body {
   padding-top: 20px;
 }
 
+.corners, .corners div {
+  padding: 0;
+  margin: 0;
+}
+
 .hidden {
   display: none;
 }

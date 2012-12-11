@@ -37,6 +37,8 @@
           </div>
         </div>
 
+        <canvas id="full-image" class="hidden"></canvas>
+
         <script id="navigation-template" type="text/template">
           <div class="navigation btn-group">
             <% if (previous) { %>
@@ -84,9 +86,22 @@
           <canvas id="overview" width="1100" height="400"></canvas>
         </script>
 
+        <script id="corners-template" type="text/template">
+          <p class="lead">Fine tune the dimensions.</p>
+          <div class="corners">
+            <div>
+              <canvas id="topleft" width="300" height="200"></canvas>
+              <canvas id="topright" width="300" height="200"></canvas>
+            </div>
+            <div>
+              <canvas id="bottomleft" width="300" height="200"></canvas>
+              <canvas id="bottomright" width="300" height="200"></canvas>
+            </div>
+          </div>
+        </script>
+
         <script id="rectify-template" type="text/template">
           <p class="lead">Your 'scanned' document.</p>
-          <canvas id="full-image" class="hidden"></canvas>
           <canvas id="rectify"></canvas>
         </script>
 
