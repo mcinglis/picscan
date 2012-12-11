@@ -61,15 +61,15 @@
 
             <form class="photo-form form-horizontal">
               <div class="control-group">
-                <label class="control-label" for="photo">Photo</label>
+                <label class="control-label" for="file">Photo</label>
                 <div class="controls">
-                  <input type="file" id="photo" />
+                  <input type="file" id="file" />
                 </div>
               </div>
               <div class="control-group">
-                <label class="control-label" for="size">Page size</label>
+                <label class="control-label" for="ratio">Page size</label>
                 <div class="controls">
-                  <select id="size">
+                  <select id="ratio">
                     <option value="0.77273">US letter (8.5" &times; 11")</option>
                     <option value="0.70744">A4 (8.27" &times; 11.69")</option>
                   </select>
@@ -81,7 +81,7 @@
 
         <script id="overview-template" type="text/template">
           <p class="lead">Adjust the rectification dimensions.</p>
-          <canvas id="overview"></canvas>
+          <canvas id="overview" width="1100" height="400"></canvas>
         </script>
 
         <script id="corners-template" type="text/template">
