@@ -84,8 +84,10 @@
           <canvas id="overview" width="1100" height="400"></canvas>
         </script>
 
-        <script id="corners-template" type="text/template">
-          <p class="lead">Drag to adjust corners.</p>
+        <script id="rectify-template" type="text/template">
+          <p class="lead">Your 'scanned' document.</p>
+          <canvas id="full-image" class="hidden"></canvas>
+          <canvas id="rectify"></canvas>
         </script>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
@@ -98,6 +100,7 @@
         <script src="js/vendor/fabric-0.9.15.min.js"></script>
         <script src="js/vendor/sylvester-20121210.min.js"></script>
 
+        <script src="js/rectify.js"></script>
         <script src="js/navigation.js"></script>
         <script src="js/main.js"></script>
 		<script src="js/cross.js"></script>

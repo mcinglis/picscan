@@ -66,53 +66,79 @@ $(function() {
 
     renderCanvas: function() {
       this.canvas = new fabric.Canvas('overview', { selection: false });
-      var canvas = this.canvas;
 
+      var view = this;
       fabric.Image.fromURL(configuration.imageURL, function(image) {
         var heightRatio = MAX_CANVAS_HEIGHT / image.height,
-            widthRatio = MAX_CANVAS_WIDTH / image.width;
-        configuration.set('overviewHeightRatio', heightRatio);
-        configuration.set('overviewWidthRatio', widthRatio);
-        if (heightRatio < widthRatio) {
-          image.scale(heightRatio);
-          canvas.setWidth(image.width * heightRatio);
-        } else {
-          image.scale(widthRatio);
-          canvas.setHeight(image.height * widthRatio);
-        }
-        canvas.add(image);
+            widthRatio = MAX_CANVAS_WIDTH / image.width,
+            scale = Math.min(heightRatio, widthRatio);
+
+        image.scale(scale);
+        view.canvas.setHeight(image.height * scale);
+        view.canvas.setWidth(image.width * scale);
+        configuration.set('overviewScale', scale);
+
+        view.canvas.add(image);
         image.center();
         image.selectable = false;
-        canvas.renderAll();
+        image.sendToBack();
+        view.renderCanvasCursors();
+        view.canvas.renderAll();
       });
 
-      this.renderCanvasCursors();
+    },
+
+    getCursorPoints: function() {
+      var os = 5;
+      return {
+        tl: { x: os, y: os },
+        tr: { x: this.canvas.width - os, y: os },
+        bl: { x: os, y: this.canvas.height - os },
+        br: { x: this.canvas.width - os, y: this.canvas.height - os },
+      };
     },
 
     renderCanvasCursors: function() {
-      var tl = configuration.overviewTL,
-          tr = configuration.overviewTR,
-          br = configuration.overviewBR,
-          bl = configuration.overviewBL,
-          line1 = this.makeEdge([ tl.x, tl.y, tr.x, tr.y]),
-          line2 = this.makeEdge([ tr.x, tr.y, br.x, br.y]),
-          line3 = this.makeEdge([ br.x, br.y, bl.x, bl.y]),
-          line4 = this.makeEdge([ bl.x, bl.y, tl.x, tl.y]);
+      var view = this;
+      var c = this.getCursorPoints(),
+          line1 = this.makeEdge([ c.tl.x, c.tl.y, c.tr.x, c.tr.y]),
+          line2 = this.makeEdge([ c.tr.x, c.tr.y, c.br.x, c.br.y]),
+          line3 = this.makeEdge([ c.br.x, c.br.y, c.bl.x, c.bl.y]),
+          line4 = this.makeEdge([ c.bl.x, c.bl.y, c.tl.x, c.tl.y]);
 
-      this.canvas.add(line, line2, line3, line4);
+      this.canvas.add(line1, line2, line3, line4);
+
+      this.corners = {
+        tl: this.makeCorner(line4.get('x2'), line4.get('y2'), line4, line1),
+        tr: this.makeCorner(line1.get('x2'), line1.get('y2'), line1, line2),
+        bl: this.makeCorner(line3.get('x2'), line3.get('y2'), line3, line4),
+        br: this.makeCorner(line2.get('x2'), line2.get('y2'), line2, line3),
+      };
 
       this.canvas.add(
-        this.makeCorner(line1.get('x1'), line1.get('y1'), line1, line2),
-        this.makeCorner(line2.get('x2'), line2.get('y2'), line2, line3),
-        this.makeCorner(line3.get('x2'), line3.get('y2'), line3, line4),
-        this.makeCorner(line4.get('x2'), line4.get('y2'), line4, line1)
+          this.corners.tl,
+          this.corners.tr,
+          this.corners.bl,
+          this.corners.br
       );
 
+      function saveCornerPositions(corners) {
+        function getPos(corner) {
+          return { x: corner.left, y: corner.top }
+        }
+        configuration.set('overviewTL', getPos(corners.tl));
+        configuration.set('overviewTR', getPos(corners.tr));
+        configuration.set('overviewBL', getPos(corners.bl));
+        configuration.set('overviewBR', getPos(corners.br));
+      }
+
+      var canvas = this.canvas;
       this.canvas.on('object:moving', function(e) {
         var p = e.target;
         p.line1 && p.line1.set({ 'x2': p.left, 'y2': p.top });
         p.line2 && p.line2.set({ 'x1': p.left, 'y1': p.top });
-        this.canvas.renderAll();
+        saveCornerPositions(view.corners);
+        canvas.renderAll();
       });
     },
 	
@@ -134,10 +160,67 @@ $(function() {
   });
 
   var RectifyView = ScreenView.extend({
-    template: template('#corners-template'),
+    template: template('#rectify-template'),
     render: function() {
       this.$el.html(this.template());
+      this.rectify();
       return this;
+    },
+
+    rectify: function() {
+      function distance(p1, p2) {
+        var dx = Math.abs(p1.x - p2.x),
+            dy = Math.abs(p1.y - p2.y);
+        return Math.sqrt((dx * dx) + (dy * dy));
+      }
+      function scaleOverviewPoint(point) {
+        var scale = configuration.overviewScale;
+        return { x: point.x / scale, y: point.y / scale };
+      }
+      function ar(p) {
+        return [p.x, p.y]
+      }
+      var corners = {
+        tl: scaleOverviewPoint(configuration.overviewTL),
+        tr: scaleOverviewPoint(configuration.overviewTR),
+        bl: scaleOverviewPoint(configuration.overviewBL),
+        br: scaleOverviewPoint(configuration.overviewBR),
+      };
+      var sides = {
+        top: distance(corners.tl, corners.tr),
+        right: distance(corners.tr, corners.br),
+        bottom: distance(corners.br, corners.bl),
+        left: distance(corners.bl, corners.tl)
+      };
+      var ratio = configuration.sizeRatio,
+          widthAverage = (sides.top + sides.bottom) / 2,
+          widthScale = widthAverage / ratio,
+          heightScale = (sides.left + sides.right) / 2,
+          scale = (widthScale + heightScale) / 2,
+          pts1 = [
+            ar(corners.tl), ar(corners.tr), ar(corners.br), ar(corners.bl)
+          ],
+          sr = scale * ratio,
+          pts2 = [[0,0], [sr, 0], [sr, scale], [0, scale]],
+          homography = rectify.homography(pts2, pts1);
+
+      console.log('pts1: ' + pts1);
+      console.log('pts2: ' + pts2);
+
+      var fullCanvas = new fabric.StaticCanvas('full-image');
+      fabric.Image.fromURL(configuration.imageURL, function(image) {
+        fullCanvas.add(image);
+        fullCanvas.setWidth(image.width);
+        fullCanvas.setHeight(image.height);
+        image.center();
+        fullCanvas.renderAll();
+        var context = fullCanvas.getContext(),
+            newImage = rectify.rectify(context, homography, sr, scale),
+            saveCanvas = new fabric.StaticCanvas('rectify');
+        saveCanvas.setWidth(sr);
+        saveCanvas.setHeight(scale);
+        saveCanvas.getContext().putImageData(newImage, 0, 0);
+      });
     },
   });
 
@@ -145,7 +228,7 @@ $(function() {
     views: {
       start: new StartView(),
       overview: new OverviewView(),
-      corners: new RectifyView(),
+      rectify: new RectifyView(),
     },
 
     initialize: function(options) {
@@ -160,7 +243,7 @@ $(function() {
   });
 
   var navigation = new psnav.Navigation({
-    screens: ['start', 'overview', 'corners']
+    screens: ['start', 'overview', 'rectify']
   });
   router = new Router({ navigation: navigation });
   Backbone.history.start();
