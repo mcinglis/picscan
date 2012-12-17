@@ -15,17 +15,17 @@ $(function() {
 
   var template = function(identifier) {
     return _.template($(identifier).html());
-  }
+  };
 
   var configuration = {
     set: function(key, value) {
       this[key] = value;
       console.log('configuration.' + key + ' = ' + value);
-    },
+    }
   };
 
   var ScreenView = Backbone.View.extend({
-    el: '#dynamic',
+    el: '#dynamic'
   });
   
    /*  ******* START VIEW ******* */
@@ -41,7 +41,7 @@ $(function() {
 
     events: {
       'change #file': 'saveImageURL',
-      'change #ratio': 'saveRatio',
+      'change #ratio': 'saveRatio'
     },
 
     saveImageURL: function() {
@@ -54,7 +54,7 @@ $(function() {
       var element = $('#ratio :selected'),
       value = parseFloat(element.attr('value'));
       configuration.set('sizeRatio', value);
-    },
+    }
   });
 
    /*  ******* OVERVIEW VIEW ******* */
@@ -99,7 +99,7 @@ $(function() {
         tl: { x: osx, y: osy },
         tr: { x: this.canvas.width - osx, y: osy },
         bl: { x: osx, y: this.canvas.height - osy },
-        br: { x: this.canvas.width - osx, y: this.canvas.height - osy },
+        br: { x: this.canvas.width - osx, y: this.canvas.height - osy }
       };
     },
 
@@ -117,7 +117,7 @@ $(function() {
         tl: this.makeCorner(line4.get('x2'), line4.get('y2'), line4, line1),
         tr: this.makeCorner(line1.get('x2'), line1.get('y2'), line1, line2),
         bl: this.makeCorner(line3.get('x2'), line3.get('y2'), line3, line4),
-        br: this.makeCorner(line2.get('x2'), line2.get('y2'), line2, line3),
+        br: this.makeCorner(line2.get('x2'), line2.get('y2'), line2, line3)
       };
 
       this.canvas.add(
@@ -129,7 +129,7 @@ $(function() {
 
       function saveCornerPositions(corners) {
         function getPos(corner) {
-          return { x: corner.left, y: corner.top }
+          return { x: corner.left, y: corner.top };
         }
         configuration.set('overviewTL', getPos(corners.tl));
         configuration.set('overviewTR', getPos(corners.tr));
@@ -140,8 +140,8 @@ $(function() {
       var canvas = this.canvas;
       this.canvas.on('object:moving', function(e) {
         var p = e.target;
-        p.line1 && p.line1.set({ 'x2': p.left, 'y2': p.top });
-        p.line2 && p.line2.set({ 'x1': p.left, 'y1': p.top });
+        if (p.line1) p.line1.set({ 'x2': p.left, 'y2': p.top });
+        if (p.line2) p.line2.set({ 'x1': p.left, 'y1': p.top });
         saveCornerPositions(view.corners);
         canvas.renderAll();
       });
@@ -161,7 +161,7 @@ $(function() {
         strokeWidth: 1,
         selectable: false
       });
-    },
+    }
   });
   
   /*  ******* CORNERS VIEW ******* */
@@ -229,7 +229,7 @@ $(function() {
         line1: this.makeEdge([this.TL.corner.x, this.TL.corner.y, this.TR.corner.x, this.TR.corner.y]),
         line2: this.makeEdge([this.TR.corner.x, this.TR.corner.y, this.BR.corner.x, this.BR.corner.y]),
         line3: this.makeEdge([this.BR.corner.x, this.BR.corner.y, this.BL.corner.x, this.BL.corner.y]),
-        line4: this.makeEdge([this.BL.corner.x, this.BL.corner.y, this.TL.corner.x, this.TL.corner.y]),
+        line4: this.makeEdge([this.BL.corner.x, this.BL.corner.y, this.TL.corner.x, this.TL.corner.y])
       };
       
       this.addCursor(this.TL, lines.line4.clone(), lines.line1.clone());
@@ -243,8 +243,8 @@ $(function() {
     saveCornerPosition: function(offset, point, selectedPoint) {
         function getPos(corner) {
           var scale = configuration.overviewScale;
-          return { x: corner.left * scale, y: corner.top * scale}
-        };
+          return { x: corner.left * scale, y: corner.top * scale};
+        }
         
         point.top = point.top + offset.y,
         point.left = point.left + offset.x,
@@ -276,7 +276,7 @@ $(function() {
         var p = e.target;
         var change = {
           top: p.top - view.TL.canvas.height/2,
-          left: p.left - view.TL.canvas.width/2,
+          left: p.left - view.TL.canvas.width/2
         };
         view.saveCornerPosition(view.TL.offset, p, 'overviewTL');
         view.updateCanvas(view.TL, change);
@@ -286,7 +286,7 @@ $(function() {
         var p = e.target;
         var change = {
           top: p.top - view.TR.canvas.height/2,
-          left: p.left - view.TR.canvas.width/2,
+          left: p.left - view.TR.canvas.width/2
         };
         view.saveCornerPosition(view.TR.offset, p, 'overviewTR');
         view.updateCanvas(view.TR, change);
@@ -296,7 +296,7 @@ $(function() {
         var p = e.target;
         var change = {
           top: p.top - view.BL.canvas.height/2,
-          left: p.left - view.BL.canvas.width/2,
+          left: p.left - view.BL.canvas.width/2
         };
         view.saveCornerPosition(view.BL.offset, p, 'overviewBL');
         view.updateCanvas(view.BL, change);
@@ -306,7 +306,7 @@ $(function() {
         var p = e.target;
         var change = {
           top: p.top - view.BR.canvas.height/2,
-          left: p.left - view.BR.canvas.width/2,
+          left: p.left - view.BR.canvas.width/2
         };
         view.saveCornerPosition(view.BR.offset, p, 'overviewBR');
         view.updateCanvas(view.BR, change);
@@ -335,7 +335,7 @@ $(function() {
         strokeWidth: 1,
         selectable: false
       });
-    },
+    }
   });
   
    /*  ******* RECTIFY VIEW ******* */
@@ -359,13 +359,13 @@ $(function() {
         return { x: point.x / scale, y: point.y / scale };
       }
       function ar(p) {
-        return [p.x, p.y]
+        return [p.x, p.y];
       }
       var corners = {
         tl: scaleOverviewPoint(configuration.overviewTL),
         tr: scaleOverviewPoint(configuration.overviewTR),
         bl: scaleOverviewPoint(configuration.overviewBL),
-        br: scaleOverviewPoint(configuration.overviewBR),
+        br: scaleOverviewPoint(configuration.overviewBR)
       };
       var sides = {
         top: distance(corners.tl, corners.tr),
@@ -402,7 +402,7 @@ $(function() {
         saveCanvas.setHeight(scale);
         saveCanvas.getContext().putImageData(newImage, 0, 0);
       });
-    },
+    }
   });
 
   var Router = Backbone.Router.extend({
@@ -410,7 +410,7 @@ $(function() {
       start: new StartView(),
       overview: new OverviewView(),
       corners: new CornersView(),
-      rectify: new RectifyView(),
+      rectify: new RectifyView()
     },
 
     initialize: function(options) {
@@ -421,7 +421,7 @@ $(function() {
     renderView: function(name) {
       name = name || 'start';
       return this.views[name].render();
-    },
+    }
   });
 
   var navigation = new psnav.Navigation({
@@ -431,4 +431,5 @@ $(function() {
   new Router({ navigation: navigation });
   Backbone.history.start();
   Backbone.history.navigate('start');
+
 });
