@@ -27,6 +27,8 @@ $(function() {
   var ScreenView = Backbone.View.extend({
     el: '#dynamic',
   });
+  
+   /*  ******* START VIEW ******* */
 
   var StartView = ScreenView.extend({
     template: template('#start-template'),
@@ -55,6 +57,8 @@ $(function() {
     },
   });
 
+   /*  ******* OVERVIEW VIEW ******* */
+  
   var OverviewView = ScreenView.extend({
     template: template('#overview-template'),
 
@@ -159,6 +163,8 @@ $(function() {
       });
     },
   });
+  
+  /*  ******* CORNERS VIEW ******* */
 
   var CornersView = ScreenView.extend({
     template: template('#corners-template'),
@@ -183,11 +189,10 @@ $(function() {
       view.offset = toPoint(view.corner.x - (view.canvas.width/2), view.corner.y - (view.canvas.height/2));
 
       fabric.Image.fromURL(configuration.imageURL, function(image) {
-        view.offset.y = image.height/2 - view.offset.y;
-        view.offset.x = image.width/2 - view.offset.x;
-        image.top = view.offset.y;
-        image.left = view.offset.x;
-
+        image.top = image.height/2 - view.offset.y;
+        image.left = image.width/2 - view.offset.x;
+        view.image = image;
+        
         view.canvas.add(image);
         image.selectable = false;
         image.sendToBack();
@@ -201,25 +206,139 @@ $(function() {
       this.BL = this.makeCanvas('bottomleft', configuration.overviewBL);
       this.BR = this.makeCanvas('bottomright', configuration.overviewBR);
     },
+    
+    moveLine: function(line, offset){
+      line.top = line.top - offset.y;
+      line.left = line.left - offset.x;
+    },
+    
+    addCursor: function(view, lineA, lineB){
+      this.moveLine(lineA, view.offset);
+      this.moveLine(lineB, view.offset);
+      view.cursor = this.makeCorner(view.canvas.width/2, view.canvas.height/2, lineA, lineB);
+      view.canvas.add(lineA);
+      view.canvas.add(lineB);
+      view.canvas.add(view.cursor);
+      view.canvas.renderAll();
+    },
 
     renderCanvases: function() {
       this.setupCanvases();
 
       var lines = {
-        line1: this.makeEdge([ c.tl.x, c.tl.y, c.tr.x, c.tr.y]),
-        line2: this.makeEdge([ c.tr.x, c.tr.y, c.br.x, c.br.y]),
-        line3: this.makeEdge([ c.br.x, c.br.y, c.bl.x, c.bl.y]),
-        line4: this.makeEdge([ c.bl.x, c.bl.y, c.tl.x, c.tl.y]),
+        line1: this.makeEdge([this.TL.corner.x, this.TL.corner.y, this.TR.corner.x, this.TR.corner.y]),
+        line2: this.makeEdge([this.TR.corner.x, this.TR.corner.y, this.BR.corner.x, this.BR.corner.y]),
+        line3: this.makeEdge([this.BR.corner.x, this.BR.corner.y, this.BL.corner.x, this.BL.corner.y]),
+        line4: this.makeEdge([this.BL.corner.x, this.BL.corner.y, this.TL.corner.x, this.TL.corner.y]),
       };
+      
+      this.addCursor(this.TL, lines.line4.clone(), lines.line1.clone());
+      this.addCursor(this.TR, lines.line1.clone(), lines.line2.clone());
+      this.addCursor(this.BL, lines.line3.clone(), lines.line4.clone());
+      this.addCursor(this.BR, lines.line2.clone(), lines.line3.clone()); 
+      
+      this.setupListeners();
+    }, 
+    
+    saveCornerPosition: function(offset, point, selectedPoint) {
+        function getPos(corner) {
+          var scale = configuration.overviewScale;
+          return { x: corner.left * scale, y: corner.top * scale}
+        };
+        
+        point.top = point.top + offset.y,
+        point.left = point.left + offset.x,
+        
+        configuration.set(selectedPoint, getPos(point));
+    },
+    
+    updateCanvas: function(view, change){
+      function offset(obj, off){
+        obj.top = obj.top - off.top;
+        obj.left = obj.left - off.left;
+      }
+      
+      offset(view.image, change);
+      offset(view.corner, change);
+      offset(view.offset, change);
+      view.cursor.top = view.canvas.height/2;
+      view.cursor.left = view.canvas.width/2;
+      view.cursor.selectable = true;
+    },
+   
+    
+    setupListeners: function() {
+      var view = this; 
+      
+      //this.updateCanvases();
+      
+      this.TL.canvas.on('object:modified', function(e) {
+        var p = e.target;
+        var change = {
+          top: p.top - view.TL.canvas.height/2,
+          left: p.left - view.TL.canvas.width/2,
+        };
+        view.saveCornerPosition(view.TL.offset, p, 'overviewTL');
+        view.updateCanvas(view.TL, change);
+      });
+      
+      this.TR.canvas.on('object:modified', function(e) {
+        var p = e.target;
+        var change = {
+          top: p.top - view.TR.canvas.height/2,
+          left: p.left - view.TR.canvas.width/2,
+        };
+        view.saveCornerPosition(view.TR.offset, p, 'overviewTR');
+        view.updateCanvas(view.TR, change);
+      });
+      
+      this.BL.canvas.on('object:modified', function(e) {
+        var p = e.target;
+        var change = {
+          top: p.top - view.BL.canvas.height/2,
+          left: p.left - view.BL.canvas.width/2,
+        };
+        view.saveCornerPosition(view.BL.offset, p, 'overviewBL');
+        view.updateCanvas(view.BL, change);
+      });
+      
+      this.BR.canvas.on('object:modified', function(e) {
+        var p = e.target;
+        var change = {
+          top: p.top - view.BR.canvas.height/2,
+          left: p.left - view.BR.canvas.width/2,
+        };
+        view.saveCornerPosition(view.BR.offset, p, 'overviewBR');
+        view.updateCanvas(view.BR, change);
+      });
+    
+    },
+    
+    updateCanvases: function(){
+      this.TL.canvas.off('object:modified');
+      this.TR.canvas.off('object:modified');
+      this.BL.canvas.off('object:modified');
+      this.BR.canvas.off('object:modified');
+    },
+    
+    makeCorner: function (centerX, centerY, lineCounter, lineClock) {
+      var c = new Cross({ top: centerY, left: centerX, fill: 'red' });
+      c.hasControls = c.hasBorders = false;
+      c.line1 = lineCounter;
+      c.line2 = lineClock;
+      return c;
+    },
 
-      this.corners = {
-        tl: this.makeCorner(line4.get('x2'), line4.get('y2'), line4, line1),
-        tr: this.makeCorner(line1.get('x2'), line1.get('y2'), line1, line2),
-        bl: this.makeCorner(line3.get('x2'), line3.get('y2'), line3, line4),
-        br: this.makeCorner(line2.get('x2'), line2.get('y2'), line2, line3),
-      };
-    }
+    makeEdge: function (coords) {
+      return new fabric.Line(coords, {
+        fill: 'yellow',
+        strokeWidth: 1,
+        selectable: false
+      });
+    },
   });
+  
+   /*  ******* RECTIFY VIEW ******* */
 
   var RectifyView = ScreenView.extend({
     template: template('#rectify-template'),
