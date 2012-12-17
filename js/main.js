@@ -180,7 +180,7 @@ var CornersView = ScreenView.extend({
 		var view = {};
 		view.canvas = new fabric.Canvas(identifier, { selection: false });
 		view.corner = scaleOverviewPoint(selectedPoint);
-		view.offset = toPoint(view.corner.x - (view.canvas.width), view.corner.y - (view.canvas.height));
+		view.offset = toPoint(view.corner.x - (view.canvas.width/2), view.corner.y - (view.canvas.height/2));
 		return view;
 	},
 	
@@ -195,8 +195,8 @@ var CornersView = ScreenView.extend({
 		//CV.canvas.getContext().putImageData(this.fullContext.getImageData(CV.offset.x, CV.offset.y, CV.canvas.width, CV.canvas.height),0,0);
 		
 		fabric.Image.fromURL(configuration.imageURL, function(image) {
-			image.top =(CV.corner.y);
-			image.left =(CV.corner.x);
+			image.top = image.height/2 - (CV.offset.y);
+			image.left = image.width/2 - (CV.offset.x);
 			CV.canvas.add(image);
 			image.selectable = false;
 			image.sendToBack();
@@ -206,17 +206,6 @@ var CornersView = ScreenView.extend({
 	
 	renderCanvases: function() {
       this.setupCanvases();
-	  
-	  var fullCanvas = new fabric.StaticCanvas('full-image');
-      fabric.Image.fromURL(configuration.imageURL, function(image) {
-        fullCanvas.add(image);
-        fullCanvas.setWidth(image.width);
-        fullCanvas.setHeight(image.height);
-        image.center();
-        fullCanvas.renderAll();
-      });
-	  
-	  this.fullContext = fullCanvas.getContext();
 	  
 	  this.putImageToCanvas(this.TL);
 	  this.putImageToCanvas(this.TR);
