@@ -160,7 +160,8 @@ $(function() {
 	},
   });
 
-  var CornersView = ScreenView.extend({
+/* **************** CORNERS VIEW ****************** */
+var CornersView = ScreenView.extend({
     template: template('#corners-template'),
     render: function() {
       this.$el.html(this.template());
@@ -168,36 +169,43 @@ $(function() {
       return this;
     },
 	
+	makeCanvas: function(identifier, selectedPoint) {
+		function scaleOverviewPoint(point) {
+			var scale = configuration.overviewScale;
+			return { x: point.x / scale, y: point.y / scale };
+		}
+		function toPoint(xValue, yValue) {
+			return { x: xValue, y: yValue };
+		}
+		var view = {};
+		view.canvas = new fabric.Canvas(identifier, { selection: false });
+		view.corner = scaleOverviewPoint(selectedPoint);
+		view.offset = toPoint(view.corner.x - (view.canvas.width), view.corner.y - (view.canvas.height));
+		return view;
+	},
+	
+	setupCanvases: function(){
+		this.TL = this.makeCanvas('topleft', configuration.overviewTL);
+		this.TR = this.makeCanvas('topright', configuration.overviewTR);
+		this.BL = this.makeCanvas('bottomleft', configuration.overviewBL);
+		this.BR = this.makeCanvas('bottomright', configuration.overviewBR);
+	},
+	
+	putImageToCanvas: function(CV){
+		//CV.canvas.getContext().putImageData(this.fullContext.getImageData(CV.offset.x, CV.offset.y, CV.canvas.width, CV.canvas.height),0,0);
+		
+		fabric.Image.fromURL(configuration.imageURL, function(image) {
+			image.top =(CV.corner.y);
+			image.left =(CV.corner.x);
+			CV.canvas.add(image);
+			image.selectable = false;
+			image.sendToBack();
+		});
+	},
+	
 	
 	renderCanvases: function() {
-      this.canvasTL = new fabric.Canvas('topleft', { selection: false });
-	  this.canvasTR = new fabric.Canvas('topright',{ selection: false });
-	  this.canvasBL = new fabric.Canvas('bottomleft', { selection: false });
-	  this.canvasBR = new fabric.Canvas('bottomright', { selection: false });
-
-	  function scaleOverviewPoint(point) {
-        var scale = configuration.overviewScale;
-        return { x: point.x / scale, y: point.y / scale };
-      }
-      function ar(p) {
-        return [p.x, p.y]
-      }
-      var corners = {
-        tl: scaleOverviewPoint(configuration.overviewTL),
-        tr: scaleOverviewPoint(configuration.overviewTR),
-        bl: scaleOverviewPoint(configuration.overviewBL),
-        br: scaleOverviewPoint(configuration.overviewBR),
-      };
-	  function toPoint(xValue, yValue) {
-		return { x: xValue, y: yValue };
-	  }
-	  var offsets = {
-		tl: toPoint(corners.tl.x - (this.canvasTL.width/2),corners.tl.y - (this.canvasTL.height/2)),
-		tr: toPoint(corners.tr.x - (this.canvasTR.width/2), corners.tr.y - (this.canvasTR.height/2)),
-		bl: toPoint(corners.bl.x - (this.canvasBL.width/2), corners.bl.y - (this.canvasBL.height/2)),
-		br: toPoint(corners.br.x - (this.canvasBR.width/2), corners.br.y - (this.canvasBR.height/2)),
-	  };
-	  
+      this.setupCanvases();
 	  
 	  var fullCanvas = new fabric.StaticCanvas('full-image');
       fabric.Image.fromURL(configuration.imageURL, function(image) {
@@ -208,33 +216,36 @@ $(function() {
         fullCanvas.renderAll();
       });
 	  
-	  fullContext = fullCanvas.getContext();
+	  this.fullContext = fullCanvas.getContext();
 	  
-	  this.canvasTL.getContext().putImageData(fullContext.getImageData(offsets.tl.x, offsets.tl.y, this.canvasTL.width, this.canvasTL.height),0,0);
-	  this.canvasTR.getContext().putImageData(fullContext.getImageData(offsets.tr.x, offsets.tr.y, this.canvasTR.width, this.canvasTR.height),0,0);
-	  this.canvasBL.getContext().putImageData(fullContext.getImageData(offsets.bl.x, offsets.bl.y, this.canvasBL.width, this.canvasBL.height),0,0);
-	  this.canvasBR.getContext().putImageData(fullContext.getImageData(offsets.br.x, offsets.br.y, this.canvasBR.width, this.canvasBR.height),0,0);
+	  this.putImageToCanvas(this.TL);
+	  this.putImageToCanvas(this.TR);
+	  this.putImageToCanvas(this.BL);
+	  this.putImageToCanvas(this.BR);
 	  
-	 var lines = {
+	  /*
+	  var lines = {
 		line1: this.makeEdge([ c.tl.x, c.tl.y, c.tr.x, c.tr.y]),
         line2: this.makeEdge([ c.tr.x, c.tr.y, c.br.x, c.br.y]),
         line3: this.makeEdge([ c.br.x, c.br.y, c.bl.x, c.bl.y]),
         line4: this.makeEdge([ c.bl.x, c.bl.y, c.tl.x, c.tl.y]),
-	};
+	  };
 
       this.corners = {
         tl: this.makeCorner(line4.get('x2'), line4.get('y2'), line4, line1),
         tr: this.makeCorner(line1.get('x2'), line1.get('y2'), line1, line2),
         bl: this.makeCorner(line3.get('x2'), line3.get('y2'), line3, line4),
         br: this.makeCorner(line2.get('x2'), line2.get('y2'), line2, line3),
-      };
+      };*/
 
     },
 
 	
   });
+  
+ /* **************** RECTIFY VIEW ****************** */
 
-  var RectifyView = ScreenView.extend({
+ var RectifyView = ScreenView.extend({
     template: template('#rectify-template'),
     render: function() {
       this.$el.html(this.template());
@@ -319,7 +330,7 @@ $(function() {
   });
 
   var navigation = new psnav.Navigation({
-    screens: ['start', 'overview', 'rectify']
+    screens: ['start', 'overview', 'corners', 'rectify']
   });
   router = new Router({ navigation: navigation });
   Backbone.history.start();

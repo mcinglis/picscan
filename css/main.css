@@ -11,6 +11,10 @@ body {
   margin: 0;
 }
 
+.canvas-container {
+	display: inline-block;
+}
+
 .hidden {
   display: none;
 }
