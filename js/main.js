@@ -1,5 +1,4 @@
-﻿
-window.URL = window.URL || window.webkitURL;
+﻿window.URL = window.URL || window.webkitURL;
 
 required_apis = [
   window.File, window.FileReader, window.FileList, window.Blob, window.URL 
@@ -25,8 +24,8 @@ $(function() {
   var ScreenView = Backbone.View.extend({
     el: '#dynamic'
   });
-  
-   /*  ******* START VIEW ******* */
+
+  /*  ******* START VIEW ******* */
 
   var StartView = ScreenView.extend({
     template: template('#start-template'),
@@ -55,8 +54,8 @@ $(function() {
     }
   });
 
-   /*  ******* OVERVIEW VIEW ******* */
-  
+  /*  ******* OVERVIEW VIEW ******* */
+
   var OverviewView = ScreenView.extend({
     template: template('#overview-template'),
 
@@ -68,12 +67,12 @@ $(function() {
 
     renderCanvas: function() {
       this.canvas = new fabric.Canvas('overview', { selection: false });
-      
+
       var view = this;
       fabric.Image.fromURL(configuration.imageURL, function(image) {
         var MAX_CANVAS_HEIGHT = $(window).height()- ($('body').height() - $('.canvas-container').height() + parseInt($('.lead').css('margin-bottom'), 10));
         var MAX_CANVAS_WIDTH = $('.container').width();
-      
+
         var heightRatio = MAX_CANVAS_HEIGHT / image.height,
         widthRatio = MAX_CANVAS_WIDTH / image.width,
         scale = Math.min(heightRatio, widthRatio);
@@ -96,21 +95,21 @@ $(function() {
     getCursorPoints: function() {
       var osx = this.canvas.width / 4;
       var osy = this.canvas.height / 4;
-      
+
       var cursors = {};
-      
+
       if(configuration.overviewTL) cursors.tl = configuration.overviewTL;
       else cursors.tl = { x: osx, y: osy };
-      
+
       if(configuration.overviewTR) cursors.tr = configuration.overviewTR;
       else cursors.tr = { x: this.canvas.width - osx, y: osy };
-      
+
       if(configuration.overviewBL) cursors.bl = configuration.overviewBL;
       else cursors.bl = { x: osx, y: this.canvas.height - osy };
-      
+
       if(configuration.overviewBR) cursors.br = configuration.overviewBR;
       else cursors.br = { x: this.canvas.width - osx, y: this.canvas.height - osy };
-      
+
       return cursors;
     },
 
@@ -174,7 +173,7 @@ $(function() {
       });
     }
   });
-  
+
   /*  ******* CORNERS VIEW ******* */
 
   var CornersView = ScreenView.extend({
@@ -205,7 +204,7 @@ $(function() {
         image.top = image.height/2 - view.offset.y;
         image.left = image.width/2 - view.offset.x;
         view.image = image;
-        
+
         view.canvas.add(image);
         image.selectable = false;
         image.sendToBack();
@@ -218,18 +217,18 @@ $(function() {
       var MAX_CANVAS_WIDTH = $('.container').width();
       var height = (MAX_CANVAS_HEIGHT / 2) - 3,
       width = (MAX_CANVAS_WIDTH / 2) - 3;
-      
+
       this.TL = this.makeCanvas('topleft', configuration.overviewTL, width, height);
       this.TR = this.makeCanvas('topright', configuration.overviewTR, width, height);
       this.BL = this.makeCanvas('bottomleft', configuration.overviewBL, width, height);
       this.BR = this.makeCanvas('bottomright', configuration.overviewBR, width, height);
     },
-    
+
     moveLine: function(line, offset){
       line.top = line.top - offset.y;
       line.left = line.left - offset.x;
     },
-    
+
     addCursor: function(view, lineA, lineB){
       this.moveLine(lineA, view.offset);
       this.moveLine(lineB, view.offset);
@@ -249,33 +248,33 @@ $(function() {
         line3: this.makeEdge([this.BR.corner.x, this.BR.corner.y, this.BL.corner.x, this.BL.corner.y]),
         line4: this.makeEdge([this.BL.corner.x, this.BL.corner.y, this.TL.corner.x, this.TL.corner.y])
       };
-      
+
       this.addCursor(this.TL, lines.line4.clone(), lines.line1.clone());
       this.addCursor(this.TR, lines.line1.clone(), lines.line2.clone());
       this.addCursor(this.BL, lines.line3.clone(), lines.line4.clone());
       this.addCursor(this.BR, lines.line2.clone(), lines.line3.clone()); 
-      
+
       this.setupListeners();
     }, 
-    
+
     saveCornerPosition: function(offset, point, selectedPoint) {
-        function getPos(corner) {
-          var scale = configuration.overviewScale;
-          return { x: corner.left * scale, y: corner.top * scale};
-        }
-        
-        point.top = point.top + offset.y,
-        point.left = point.left + offset.x,
-        
-        configuration.set(selectedPoint, getPos(point));
+      function getPos(corner) {
+        var scale = configuration.overviewScale;
+        return { x: corner.left * scale, y: corner.top * scale};
+      }
+
+      point.top = point.top + offset.y,
+      point.left = point.left + offset.x,
+
+      configuration.set(selectedPoint, getPos(point));
     },
-    
+
     updateCanvas: function(view, change){
       function offset(obj, off){
         obj.top = obj.top - off.top;
         obj.left = obj.left - off.left;
       }
-      
+
       offset(view.image, change);
       offset(view.corner, change);
       offset(view.offset, change);
@@ -283,10 +282,10 @@ $(function() {
       view.cursor.left = view.canvas.width/2;
       view.canvas.renderAll();
     },
-    
+
     setupListeners: function() {
       var view = this; 
-      
+
       this.TL.canvas.on('object:modified', function(e) {
         var p = e.target;
         var change = {
@@ -296,7 +295,7 @@ $(function() {
         view.saveCornerPosition(view.TL.offset, p, 'overviewTL');
         view.updateCanvas(view.TL, change);
       });
-      
+
       this.TR.canvas.on('object:modified', function(e) {
         var p = e.target;
         var change = {
@@ -306,7 +305,7 @@ $(function() {
         view.saveCornerPosition(view.TR.offset, p, 'overviewTR');
         view.updateCanvas(view.TR, change);
       });
-      
+
       this.BL.canvas.on('object:modified', function(e) {
         var p = e.target;
         var change = {
@@ -316,7 +315,7 @@ $(function() {
         view.saveCornerPosition(view.BL.offset, p, 'overviewBL');
         view.updateCanvas(view.BL, change);
       });
-      
+
       this.BR.canvas.on('object:modified', function(e) {
         var p = e.target;
         var change = {
@@ -326,9 +325,9 @@ $(function() {
         view.saveCornerPosition(view.BR.offset, p, 'overviewBR');
         view.updateCanvas(view.BR, change);
       });
-    
+
     },
-    
+
     makeCorner: function (centerX, centerY, lineCounter, lineClock) {
       var c = new Cross({ top: centerY, left: centerX, fill: 'red' });
       c.hasControls = c.hasBorders = false;
@@ -345,8 +344,8 @@ $(function() {
       });
     }
   });
-  
-   /*  ******* RECTIFY VIEW ******* */
+
+  /*  ******* RECTIFY VIEW ******* */
 
   var RectifyView = ScreenView.extend({
     template: template('#rectify-template'),
