@@ -15,7 +15,9 @@ $(function() {
   };
 
   var configuration = {
+    modified: false,
     set: function(key, value) {
+      this.modified = true;
       this[key] = value;
       console.log('configuration.' + key + ' = ' + value);
     }
@@ -426,8 +428,8 @@ $(function() {
     },
 
     renderView: function(name) {
-      name = name || 'start';
-      var that = this;
+      if (!name || !configuration.modified)
+        name = 'start';
       return this.views[name].render();
     }
   });
