@@ -3,6 +3,10 @@ var Cross = fabric.util.createClass(fabric.Object, {
   initialize: function(options) {
     this.callSuper('initialize', options);
 
+    this.hasBorders = this.hasControls = false;
+
+    this.fill = 'red';
+
     this.width = 10;
     this.height = 10;
 
