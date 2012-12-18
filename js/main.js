@@ -71,7 +71,7 @@ $(function() {
       
       var view = this;
       fabric.Image.fromURL(configuration.imageURL, function(image) {
-        var MAX_CANVAS_HEIGHT = $(window).height()- ($('body').height() - $('.canvas-container').height() + parseInt($('.lead').css('margin-bottom')));
+        var MAX_CANVAS_HEIGHT = $(window).height()- ($('body').height() - $('.canvas-container').height() + parseInt($('.lead').css('margin-bottom'), 10));
         var MAX_CANVAS_WIDTH = $('.container').width();
       
         var heightRatio = MAX_CANVAS_HEIGHT / image.height,
@@ -214,7 +214,7 @@ $(function() {
     },
 
     setupCanvases: function(){
-      var MAX_CANVAS_HEIGHT = $(window).height()- ($('body').height() - $('.corners').height() + parseInt($('.lead').css('margin-bottom')));
+      var MAX_CANVAS_HEIGHT = $(window).height()- ($('body').height() - $('.corners').height() + parseInt($('.lead').css('margin-bottom'), 10));
       var MAX_CANVAS_WIDTH = $('.container').width();
       var height = (MAX_CANVAS_HEIGHT / 2) - 3,
       width = (MAX_CANVAS_WIDTH / 2) - 3;
