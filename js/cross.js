@@ -13,7 +13,7 @@ var Cross = fabric.util.createClass(fabric.Object, {
   _render: function(ctx) {
     ctx.fillRect(-this.w1 / 2, -this.h1 / 2, this.w1, this.h1);
     ctx.fillRect(-this.w2 / 2, -this.h2 / 2, this.w2, this.h2);
-	ctx.fill();
+    ctx.fill();
   }
   
 });

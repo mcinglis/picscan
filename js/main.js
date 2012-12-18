@@ -1,4 +1,4 @@
-
+﻿
 window.URL = window.URL || window.webkitURL;
 
 required_apis = [
@@ -8,8 +8,6 @@ required_apis = [
 if (!(_.every(required_apis, _.identity))) {
   alert('The required APIs are not supported by your browser.');
 }
-
-var MAX_CANVAS_HEIGHT = 400, MAX_CANVAS_WIDTH = 1100;
 
 $(function() {
 
@@ -70,9 +68,12 @@ $(function() {
 
     renderCanvas: function() {
       this.canvas = new fabric.Canvas('overview', { selection: false });
-
+      
       var view = this;
       fabric.Image.fromURL(configuration.imageURL, function(image) {
+        var MAX_CANVAS_HEIGHT = $(window).height()- ($('body').height() - $('.canvas-container').height() + parseInt($('.lead').css('margin-bottom')));
+        var MAX_CANVAS_WIDTH = $('.container').width();
+      
         var heightRatio = MAX_CANVAS_HEIGHT / image.height,
         widthRatio = MAX_CANVAS_WIDTH / image.width,
         scale = Math.min(heightRatio, widthRatio);
@@ -95,12 +96,22 @@ $(function() {
     getCursorPoints: function() {
       var osx = this.canvas.width / 4;
       var osy = this.canvas.height / 4;
-      return {
-        tl: { x: osx, y: osy },
-        tr: { x: this.canvas.width - osx, y: osy },
-        bl: { x: osx, y: this.canvas.height - osy },
-        br: { x: this.canvas.width - osx, y: this.canvas.height - osy }
-      };
+      
+      var cursors = {};
+      
+      if(configuration.overviewTL) cursors.tl = configuration.overviewTL;
+      else cursors.tl = { x: osx, y: osy };
+      
+      if(configuration.overviewTR) cursors.tr = configuration.overviewTR;
+      else cursors.tr = { x: this.canvas.width - osx, y: osy };
+      
+      if(configuration.overviewBL) cursors.bl = configuration.overviewBL;
+      else cursors.bl = { x: osx, y: this.canvas.height - osy };
+      
+      if(configuration.overviewBR) cursors.br = configuration.overviewBR;
+      else cursors.br = { x: this.canvas.width - osx, y: this.canvas.height - osy };
+      
+      return cursors;
     },
 
     renderCanvasCursors: function() {
@@ -175,7 +186,7 @@ $(function() {
       return this;
     },
 
-    makeCanvas: function(identifier, selectedPoint) {
+    makeCanvas: function(identifier, selectedPoint, width, height) {
       function scaleOverviewPoint(point) {
         var scale = configuration.overviewScale;
         return { x: point.x / scale, y: point.y / scale };
@@ -185,6 +196,8 @@ $(function() {
       }
       var view = {};
       view.canvas = new fabric.Canvas(identifier, { selection: false });
+      view.canvas.setHeight(height);
+      view.canvas.setWidth(width);
       view.corner = scaleOverviewPoint(selectedPoint);
       view.offset = toPoint(view.corner.x - (view.canvas.width/2), view.corner.y - (view.canvas.height/2));
 
@@ -201,10 +214,15 @@ $(function() {
     },
 
     setupCanvases: function(){
-      this.TL = this.makeCanvas('topleft', configuration.overviewTL);
-      this.TR = this.makeCanvas('topright', configuration.overviewTR);
-      this.BL = this.makeCanvas('bottomleft', configuration.overviewBL);
-      this.BR = this.makeCanvas('bottomright', configuration.overviewBR);
+      var MAX_CANVAS_HEIGHT = $(window).height()- ($('body').height() - $('.corners').height() + parseInt($('.lead').css('margin-bottom')));
+      var MAX_CANVAS_WIDTH = $('.container').width();
+      var height = (MAX_CANVAS_HEIGHT / 2) - 3,
+      width = (MAX_CANVAS_WIDTH / 2) - 3;
+      
+      this.TL = this.makeCanvas('topleft', configuration.overviewTL, width, height);
+      this.TR = this.makeCanvas('topright', configuration.overviewTR, width, height);
+      this.BL = this.makeCanvas('bottomleft', configuration.overviewBL, width, height);
+      this.BR = this.makeCanvas('bottomright', configuration.overviewBR, width, height);
     },
     
     moveLine: function(line, offset){
@@ -263,14 +281,11 @@ $(function() {
       offset(view.offset, change);
       view.cursor.top = view.canvas.height/2;
       view.cursor.left = view.canvas.width/2;
-      view.cursor.selectable = true;
+      view.canvas.renderAll();
     },
-   
     
     setupListeners: function() {
       var view = this; 
-      
-      //this.updateCanvases();
       
       this.TL.canvas.on('object:modified', function(e) {
         var p = e.target;
@@ -312,13 +327,6 @@ $(function() {
         view.updateCanvas(view.BR, change);
       });
     
-    },
-    
-    updateCanvases: function(){
-      this.TL.canvas.off('object:modified');
-      this.TR.canvas.off('object:modified');
-      this.BL.canvas.off('object:modified');
-      this.BR.canvas.off('object:modified');
     },
     
     makeCorner: function (centerX, centerY, lineCounter, lineClock) {
@@ -420,6 +428,7 @@ $(function() {
 
     renderView: function(name) {
       name = name || 'start';
+      var that = this;
       return this.views[name].render();
     }
   });
